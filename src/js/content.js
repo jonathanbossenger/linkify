@@ -1,3 +1,4 @@
+/* global document */
 let shiftPressed = false;
 
 const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
@@ -44,11 +45,13 @@ function pasteHandler(event) {
 	}
 
 	// Normally we don't want to do this on <input> tags, but there are exceptions.
-	const inputElementSites = [
-		'teuxdeux.com',
-	];
+	const inputElementSites = ['teuxdeux.com'];
 
-	if (editor.nodeName === 'INPUT' && editor.type === 'text' && inputElementSites.some(site => document.domain.includes(site))) {
+	if (
+		editor.nodeName === 'INPUT'
+		&& editor.type === 'text'
+		&& inputElementSites.some(site => document.domain.includes(site))
+	) {
 		inputTypeAllowed = true;
 	}
 
@@ -84,9 +87,10 @@ function pasteHandler(event) {
 	bbCodeElement ||= document.querySelectorAll('.show_bbcode').item(0);
 
 	const tracForm = document.querySelector('#propertyform');
-	if (tracForm
-			&& (tracForm.getAttribute('action').includes('/newticket')
-				|| tracForm.getAttribute('action').includes('/ticket/'))
+	if (
+		tracForm
+		&& (tracForm.getAttribute('action').includes('/newticket')
+			|| tracForm.getAttribute('action').includes('/ticket/'))
 	) {
 		pasteTrac(event, editor, pasted, start, end);
 	} else if (markdownSites.some(site => document.domain.includes(site))) {
@@ -106,16 +110,27 @@ function shiftChecker(event) {
 
 function pasteTrac(event, editor, pasted, start, end) {
 	event.preventDefault();
-	insertText('[' + pasted + ' ' + editor.value.slice(start, end) + ']', editor, start, end);
+	insertText(
+		'[' + pasted + ' ' + editor.value.slice(start, end) + ']',
+		editor,
+		start,
+		end,
+	);
 
-	const newPos = start === end ? start + pasted.length + 2 : end + pasted.length + 3;
+	const newPos
+		= start === end ? start + pasted.length + 2 : end + pasted.length + 3;
 
 	editor.setSelectionRange(newPos, newPos);
 }
 
 function pasteMarkdown(event, editor, pasted, start, end) {
 	event.preventDefault();
-	insertText('[' + editor.value.slice(start, end) + '](' + pasted + ')', editor, start, end);
+	insertText(
+		'[' + editor.value.slice(start, end) + '](' + pasted + ')',
+		editor,
+		start,
+		end,
+	);
 
 	const newPos = start === end ? start + 1 : end + pasted.length + 4;
 
@@ -124,18 +139,30 @@ function pasteMarkdown(event, editor, pasted, start, end) {
 
 function pasteBBcode(event, editor, pasted, start, end) {
 	event.preventDefault();
-	insertText('[url=' + pasted + ']' + editor.value.slice(start, end) + '[/url]', editor, start, end);
+	insertText(
+		'[url=' + pasted + ']' + editor.value.slice(start, end) + '[/url]',
+		editor,
+		start,
+		end,
+	);
 
-	const newPos = start === end ? start + pasted.length + 6 : end + pasted.length + 12;
+	const newPos
+		= start === end ? start + pasted.length + 6 : end + pasted.length + 12;
 
 	editor.setSelectionRange(newPos, newPos);
 }
 
 function pasteRemarkup(event, editor, pasted, start, end) {
 	event.preventDefault();
-	insertText('[[ ' + pasted + ' | ' + editor.value.slice(start, end) + ' ]]', editor, start, end);
+	insertText(
+		'[[ ' + pasted + ' | ' + editor.value.slice(start, end) + ' ]]',
+		editor,
+		start,
+		end,
+	);
 
-	const newPos = start === end ? start + pasted.length + 6 : end + pasted.length + 9;
+	const newPos
+		= start === end ? start + pasted.length + 6 : end + pasted.length + 9;
 
 	editor.setSelectionRange(newPos, newPos);
 }
@@ -145,27 +172,40 @@ function pasteHTML(event, editor, pasted, start, end) {
 	const leftString = editor.value.slice(0, start).toLowerCase();
 
 	// If we are inside a (start) tag for any HTML element, its not ok to paste as a an a-href
-	if ((leftString.includes('<')) && (leftString.lastIndexOf('<') > leftString.lastIndexOf('>'))) {
+	if (
+		leftString.includes('<')
+		&& leftString.lastIndexOf('<') > leftString.lastIndexOf('>')
+	) {
 		return;
 	}
 
 	// If we are inside an anchor's content, its not ok to paste as a an a-href
-	if ((leftString.includes('<a')) && (leftString.lastIndexOf('<a') > leftString.lastIndexOf('</a>'))) {
+	if (
+		leftString.includes('<a')
+		&& leftString.lastIndexOf('<a') > leftString.lastIndexOf('</a>')
+	) {
 		return;
 	}
 
 	// Looks safe, let's do this.
 	event.preventDefault();
-	insertText('<a href="' + pasted + '">' + editor.value.slice(start, end) + '</a>', editor, start, end);
+	insertText(
+		'<a href="' + pasted + '">' + editor.value.slice(start, end) + '</a>',
+		editor,
+		start,
+		end,
+	);
 
-	const newPos = start === end ? start + pasted.length + 11 : end + pasted.length + 15;
+	const newPos
+		= start === end ? start + pasted.length + 11 : end + pasted.length + 15;
 
 	editor.setSelectionRange(newPos, newPos);
 }
 
 function insertText(text, editor, start, end) {
 	if (isFirefox) {
-		editor.value = editor.value.slice(0, start) + text + editor.value.slice(end);
+		editor.value
+			= editor.value.slice(0, start) + text + editor.value.slice(end);
 	} else {
 		document.execCommand('insertText', false, text);
 	}
